@@ -120,7 +120,7 @@ export default class App extends React.Component {
     return (
       <div className="app">
         <div className="app-header">
-          <h2 style={{ margin: "1rem 0" }}>Flickr Search</h2>
+          <h2 style={{ margin: "1rem 0" }}>Search Photos</h2>
           <div className="h-flex jc ac search-bar">
             <input
               type="text"
@@ -149,9 +149,7 @@ export default class App extends React.Component {
               onImageClick={this.handleImageClick}
             />
           ) : (
-            <p style={{ margin: "1rem 0" }}>
-              Try searching for some image in the search bar
-            </p>
+            <p style={{ margin: "1rem 0" }}>Search something...</p>
           )}
           {this.state.popUpImage && (
             <ImagePopUp
