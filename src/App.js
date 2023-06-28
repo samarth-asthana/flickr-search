@@ -1,6 +1,7 @@
 import React from "react";
 import "./App.css";
 import ImageList from "./components/ImageList.js";
+import ImagePopUp from "./components/ImagePopup.js";
 import {
   scrollAreaAvailable,
   debounce,
@@ -8,12 +9,13 @@ import {
   checkHttpStatus,
   parseJSON,
 } from "./utils.js";
+import constants from "./constants";
 
 export default class App extends React.Component {
   constructor(props) {
     super(props);
     const queriesFromStorage = JSON.parse(
-      localStorage.getItem(process.env.STORAGE_KEY)
+      localStorage.getItem(constants.STORAGE_KEY)
     );
     this.state = {
       searchText: "",
@@ -34,10 +36,30 @@ export default class App extends React.Component {
       if (scrollAreaAvailable()) return;
       this.handleScroll();
     }, 1000);
+
+    let url;
+    if (!this.state.searchText.length) {
+      url = constants.BASE_URL;
+
+      fetch(url)
+        .then(checkHttpStatus)
+        .then(parseJSON)
+        .then((resp) => {
+          this.setState({ imageList: resp.photos.photo });
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
     this.makeDebouncedSearch = debounce(() => {
-      this.state.queries.push(this.state.searchText);
-      this.setState({ queries: this.state.queries }, this.updateLocalStorage());
-      const url = process.env.BASE_URL + "&text=" + this.state.searchText;
+      if (this.state.searchText.length) {
+        this.state.queries.push(this.state.searchText);
+        this.setState(
+          { queries: this.state.queries },
+          this.updateLocalStorage()
+        );
+      }
+      url = constants.SEARCH_BASE_URL + "&text=" + this.state.searchText;
       fetch(url)
         .then(checkHttpStatus)
         .then(parseJSON)
@@ -52,7 +74,7 @@ export default class App extends React.Component {
 
   updateLocalStorage() {
     localStorage.setItem(
-      process.env.STORAGE_KEY,
+      constants.STORAGE_KEY,
       JSON.stringify(this.state.queries)
     );
   }
@@ -66,7 +88,7 @@ export default class App extends React.Component {
 
   handleScroll() {
     let url =
-      process.env.BASE_URL +
+      constants.BASE_URL +
       "&text=" +
       this.state.searchText +
       "&page=" +
@@ -130,6 +152,12 @@ export default class App extends React.Component {
             <p style={{ margin: "1rem 0" }}>
               Try searching for some image in the search bar
             </p>
+          )}
+          {this.state.popUpImage && (
+            <ImagePopUp
+              image={this.state.popUpImage}
+              onHide={this.onPopUpHide}
+            />
           )}
         </div>
       </div>
