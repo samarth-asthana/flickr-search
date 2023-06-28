@@ -1,7 +1,6 @@
 import React from "react";
 import "./App.css";
 import ImageList from "./components/ImageList.js";
-import constants from "./constants.js";
 import {
   scrollAreaAvailable,
   debounce,
@@ -9,14 +8,12 @@ import {
   checkHttpStatus,
   parseJSON,
 } from "./utils.js";
-import dotenv from "dotenv";
-dotenv.config();
 
 export default class App extends React.Component {
   constructor(props) {
     super(props);
     const queriesFromStorage = JSON.parse(
-      localStorage.getItem(constants.STORAGE_KEY)
+      localStorage.getItem(process.env.STORAGE_KEY)
     );
     this.state = {
       searchText: "",
@@ -37,11 +34,10 @@ export default class App extends React.Component {
       if (scrollAreaAvailable()) return;
       this.handleScroll();
     }, 1000);
-    console.log(process.env.REACT_APP_BASE_URL);
     this.makeDebouncedSearch = debounce(() => {
       this.state.queries.push(this.state.searchText);
       this.setState({ queries: this.state.queries }, this.updateLocalStorage());
-      const url = constants.BASE_URL + "&text=" + this.state.searchText;
+      const url = process.env.BASE_URL + "&text=" + this.state.searchText;
       fetch(url)
         .then(checkHttpStatus)
         .then(parseJSON)
@@ -56,7 +52,7 @@ export default class App extends React.Component {
 
   updateLocalStorage() {
     localStorage.setItem(
-      constants.STORAGE_KEY,
+      process.env.STORAGE_KEY,
       JSON.stringify(this.state.queries)
     );
   }
@@ -70,7 +66,7 @@ export default class App extends React.Component {
 
   handleScroll() {
     let url =
-      constants.BASE_URL +
+      process.env.BASE_URL +
       "&text=" +
       this.state.searchText +
       "&page=" +
